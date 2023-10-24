@@ -2,7 +2,7 @@
 
 This is a simple todo app built with React, React-Query using optimistic updates.
 
-<h2 style="color:#e8ba35"> Optimistic Updates </h2>
+<h2><span style="color:#e8ba35;">Optimistic Updates</span>  </h2>
 Idea was to make the app as responsive as possible even in the low network connections.
 So, I used optimistic updates to make the app feel more responsive. I would not have implemented this with optimistic 
 updates if this was not for the sake of learning since it complicates the code a bit and was overkill given the 
