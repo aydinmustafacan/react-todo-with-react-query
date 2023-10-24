@@ -25,6 +25,6 @@ In development mode
 yarn start
 ```
 In production mode
-```
+```zsh
 yarn build && yarn serve
 ```
