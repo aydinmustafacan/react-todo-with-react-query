@@ -1,6 +1,7 @@
 # React Todo App with React-Query and Optimistic Updates 
 
 This is a simple todo app built with React, React-Query using optimistic updates.
+Live at: http://todo.aydinmustafa.com
 
 <h2>Optimistic Updates  </h2>
 Idea was to make the app as responsive as possible even in the low network connections.
