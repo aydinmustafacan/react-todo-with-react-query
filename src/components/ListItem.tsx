@@ -3,14 +3,15 @@ import { TodoItem } from './ToDoList'
 import { Box, Checkbox, CircularProgress, IconButton, TextField, Typography } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import { useQueryClient } from '@tanstack/react-query'
-import useCheckTodoItemMutation from '../lib/hooks/useCheckTodoItemMutation'
+import useCheckTodoItemMutation, { Status } from '../lib/hooks/useCheckTodoItemMutation'
 import useEditDescriptionOfTodoItemMutation from '../lib/hooks/useEditDescriptionOfTodoItemMutation'
 import useDeleteTodoItemMutation from '../lib/hooks/useDeleteTodoItemMutation'
 import { makeStyles } from 'tss-react/mui'
 
 interface ListItemProps {
-  todo: TodoItem
-  lockedItemId: string | null
+  item: TodoItem
+  isLocked: boolean
+  onCompleteUpdate: (status: Status) => void
 }
 export interface CheckBoxClickEventData {
   id: string
@@ -57,11 +58,9 @@ const useStyles = makeStyles()({
   }
 });
 
-const ListItem = (props: ListItemProps) => {
+const ListItem = ({ item: { description, completed, id }, isLocked, onCompleteUpdate }: ListItemProps) => {
   const {classes} = useStyles();
 
-  const {todo: prop,  lockedItemId} = props
-  const { description, completed, id } = prop
   const queryClient = useQueryClient()
 
   const [editing, setEditing] = useState(false)
@@ -69,18 +68,15 @@ const ListItem = (props: ListItemProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isAbleToUpdateDesc = useRef(false)
 
-  const isLocked = id === lockedItemId;
-
   const [text, setText] = useState(description)
   const [isCompleted, setIsCompleted] = useState(completed)
-  const [optimisticUpdateCompleted, setOptimisticUpdateCompleted] = useState(!isLocked)
   const {
     mutate: checkAsCompleteMutate,
-  } = useCheckTodoItemMutation({ setComplete: setOptimisticUpdateCompleted })
+  } = useCheckTodoItemMutation({ setComplete: onCompleteUpdate })
 
   const {
     mutateAsync: editDescriptionMutate,
-  } = useEditDescriptionOfTodoItemMutation({ setComplete: setOptimisticUpdateCompleted })
+  } = useEditDescriptionOfTodoItemMutation({ setComplete: onCompleteUpdate })
 
   const { mutateAsync: deleteToDoItem} = useDeleteTodoItemMutation()
 
@@ -88,10 +84,6 @@ const ListItem = (props: ListItemProps) => {
     await deleteToDoItem(todo)
     await queryClient.invalidateQueries(['todos'])
   }
-
-  useEffect(() => {
-    setOptimisticUpdateCompleted(!isLocked)
-  }, [isLocked]);
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
@@ -121,7 +113,7 @@ const ListItem = (props: ListItemProps) => {
     <Box component="li" key={id} display="flex" alignItems="center" ref={wrapperRef}>
       <Checkbox
         checked={isCompleted}
-        disabled={!optimisticUpdateCompleted}
+        disabled={isLocked}
         onChange={(e) => {
           const checked = e.currentTarget.checked
           setIsCompleted(checked)
@@ -133,9 +125,9 @@ const ListItem = (props: ListItemProps) => {
       {!editing ? (
         <Typography
           className={classes.heading}
-          style={!optimisticUpdateCompleted ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+          style={isLocked ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
           onClick={() => {
-            if (optimisticUpdateCompleted) {
+            if (!isLocked) {
               setEditing(true)
             }
           }}
@@ -163,7 +155,7 @@ const ListItem = (props: ListItemProps) => {
       <IconButton onClick={() => handleDeleteById({ id })}>
         <Delete />
       </IconButton>
-      {!optimisticUpdateCompleted && <CircularProgress size={20} />}
+      {isLocked && <CircularProgress size={20} />}
     </Box>
   )
 }

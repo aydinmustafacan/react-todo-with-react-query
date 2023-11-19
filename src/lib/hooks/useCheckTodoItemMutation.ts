@@ -11,7 +11,13 @@ async function handleCheckBoxClickEvent(variables: CheckBoxClickEventData) {
 }
 
 type CheckTodoItemMutationPropsType = {
-  setComplete: (isCompleted: boolean) => void
+  setComplete: (status: Status) => void
+}
+
+export enum Status {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  ERROR = 'ERROR'
 }
 
 function useCheckTodoItemMutation(props: CheckTodoItemMutationPropsType) {
@@ -21,7 +27,7 @@ function useCheckTodoItemMutation(props: CheckTodoItemMutationPropsType) {
   return useMutation({
     mutationFn: handleCheckBoxClickEvent,
     onMutate: async (variables) => {
-      setOptimisticUpdateCompleted(false)
+      setOptimisticUpdateCompleted(Status.PENDING)
       const { id, checked } = variables
       await queryClient.cancelQueries({ queryKey: ['todos'] })
 
@@ -43,7 +49,7 @@ function useCheckTodoItemMutation(props: CheckTodoItemMutationPropsType) {
       await queryClient.invalidateQueries(['todos'])
     },
     onSuccess: async(data, variables, context) => {
-      setOptimisticUpdateCompleted(true)
+      setOptimisticUpdateCompleted(Status.COMPLETED)
       console.log("On success")
     },
     // onSettled: async (data, error, variables, context) => {}

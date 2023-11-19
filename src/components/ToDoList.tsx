@@ -7,6 +7,7 @@ import { Button } from '@mui/material'
 import useDeleteAllPostsHook from '../lib/hooks/useDeleteAllPostsHook'
 import useCreateTodoItemMutation from '../lib/hooks/useCreateTodoItemMutation'
 import { makeStyles } from 'tss-react/mui'
+import { Status } from '../lib/hooks/useCheckTodoItemMutation'
 
 export interface TodoItem {
   id: string
@@ -145,8 +146,18 @@ export default function ToDoList() {
         <>
           <ul>
             {data.items.map((todo: TodoItem) => (
-              <div className={classes.heading}>
-                <ListItem key={todo.id} todo={todo} lockedItemId={lockedItemId} />
+              <div className={classes.heading} key={todo.id}>
+                {/* TODO process successful and failed updates */}
+                <ListItem item={todo} isLocked={lockedItemId === todo.id} onCompleteUpdate={(status) => {
+                  switch (status) {
+                    case Status.COMPLETED:
+                      setLockedItemId(null)
+                      break;
+                    case Status.PENDING:
+                      setLockedItemId(todo.id)
+                      break;
+                  }
+                }}/>
               </div>
             ))}
           </ul>
